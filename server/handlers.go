@@ -31,7 +31,7 @@ func Door(c echo.Context) error {
 	player := NewPlayer(conn)
 	room.players.Store(playerName, player)
 
-	s := fmt.Sprintf("room:%s name:%s", roomName, playerName)
+	s := fmt.Sprintf("%s joined to %s!", playerName, roomName)
 	room.BroadcastText(c.Logger(), s)
 
 	return nil

@@ -6,16 +6,16 @@ type Player struct {
 	connection *websocket.Conn
 }
 
-func NewPlayer(conn *websocket.Conn) *Player {
-	return &Player{
+func NewPlayer(conn *websocket.Conn) Player {
+	return Player{
 		connection: conn,
 	}
 }
 
-func PlayerCast(i interface{}) (*Player, error) {
-	p, ok := i.(*Player)
+func PlayerCast(i interface{}) (Player, error) {
+	p, ok := i.(Player)
 	if !ok {
-		return nil, ErrorCastFailed
+		return Player{nil}, ErrorCastFailed
 	}
 	return p, nil
 }

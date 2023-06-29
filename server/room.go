@@ -8,33 +8,33 @@ import (
 )
 
 var (
-	pingBytes = []byte{0x70, 0x69, 0x6e, 0x67}
+	pingBytes = []byte{0x70, 0x69, 0x6e, 0x67} // "ping"
 )
 
 type Room struct {
 	players *sync.Map
 }
 
-func NewRoom() *Room {
-	return &Room{
+func NewRoom() Room {
+	return Room{
 		players: &sync.Map{},
 	}
 }
 
-func RoomCast(i interface{}) (*Room, error) {
-	r, ok := i.(*Room)
+func RoomCast(i interface{}) (Room, error) {
+	r, ok := i.(Room)
 	if !ok {
-		return nil, ErrorCastFailed
+		return Room{nil}, ErrorCastFailed
 	}
 	return r, nil
 }
 
-func RoomFromContext(ctx *CRContext, roomName string) (*Room, error) {
+func RoomFromContext(ctx *CRContext, roomName string) (Room, error) {
 	i, exists := ctx.chatRooms.Load(roomName)
 	if exists {
 		room, err := RoomCast(i)
 		if err != nil {
-			return nil, err
+			return Room{nil}, err
 		}
 		return room, nil
 	} else {
@@ -44,15 +44,20 @@ func RoomFromContext(ctx *CRContext, roomName string) (*Room, error) {
 	}
 }
 
-func (r *Room) BroadcastText(l echo.Logger, text string) uint {
+// returns count of active players
+func (r Room) BroadcastText(l echo.Logger, text string) uint {
 	return r.broadcastInternal(l, websocket.TextMessage, []byte(text))
 }
 
-func (r *Room) BroadcastPing(l echo.Logger) uint {
+// returns count of active players
+
+func (r Room) BroadcastPing(l echo.Logger) uint {
 	return r.broadcastInternal(l, websocket.PingMessage, pingBytes)
 }
 
-func (r *Room) broadcastInternal(l echo.Logger, msgType int, msg []byte) uint {
+// returns count of active players
+
+func (r Room) broadcastInternal(l echo.Logger, msgType int, msg []byte) uint {
 	badConns := []interface{}{}
 	numPlayers := uint(0)
 	r.players.Range(func(k, v any) bool {
