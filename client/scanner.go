@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"log"
+	"errors"
 	"os"
 
 	"github.com/gorilla/websocket"
@@ -49,7 +49,7 @@ func (s Scanner) ScanInputs() {
 			if err != nil {
 				s.errCh <- err
 			} else {
-				log.Println("reached EOF")
+				s.errCh <- errors.New("reaching unknown EOF, please open new terminal")
 			}
 		}
 	}
