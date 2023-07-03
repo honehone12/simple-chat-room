@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"simple-chat-room/common"
 
 	"github.com/labstack/echo/v4"
 )
@@ -9,9 +10,8 @@ import (
 func Door(c echo.Context) error {
 	roomName := c.Param("room")
 	playerName := c.QueryParam("name")
-	ctx := c.(*CRContext)
 
-	room, err := RoomFromContext(ctx, roomName)
+	room, err := RoomFromContext(c, roomName)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func Door(c echo.Context) error {
 		return ErrorPlayerExists
 	}
 
-	conn, err := ctx.protocolSwitcher.Upgrade(
+	conn, err := c.(*CRContext).protocolSwitcher.Upgrade(
 		c.Response(),
 		c.Request(),
 		nil,
@@ -28,11 +28,18 @@ func Door(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	player := NewPlayer(conn)
+	player := NewPlayer(
+		playerName,
+		conn,
+		room.MsgChan(),
+		room.ErrChan(),
+	)
+	// better key type ?? (can't use []byte here)
 	room.players.Store(playerName, player)
+	go player.Read(c.Logger())
 
-	s := fmt.Sprintf("[INFO] %s joined to %s!", playerName, roomName)
-	room.BroadcastText(c.Logger(), s)
+	s := fmt.Sprintf("%s joined to %s!", playerName, roomName)
+	room.BroadcastText(c.Logger(), common.INFOMsg(s))
 
 	return nil
 }

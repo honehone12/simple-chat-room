@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -26,12 +27,13 @@ func ping(l echo.Logger, c *sync.Map) {
 		totalRooms := uint(0)
 		totalPlayers := uint(0)
 		emptyRoom := []interface{}{}
+		// Rnage() blocks while entire loop ??
 		c.Range(func(k, v any) bool {
 			r, err := RoomCast(v)
 			if err != nil {
 				l.Error(
 					err,
-					"[Leak] this cast error means it can not even close the room",
+					"this cast error means it can not even close the room",
 				)
 				return true
 			}
@@ -51,7 +53,7 @@ func ping(l echo.Logger, c *sync.Map) {
 			}
 		}
 
-		l.Infof("[Ping] rooms: %d, players: %d", totalRooms, totalPlayers)
+		l.Info(fmt.Sprintf("summary: rooms[%d] players[%d]", totalRooms, totalPlayers))
 		time.Sleep(time.Millisecond * pingIntervalMil)
 	}
 }

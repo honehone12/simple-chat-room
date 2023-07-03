@@ -27,6 +27,7 @@ func (p Printer) PrintMessages() {
 		msgType, msg, err := p.connection.ReadMessage()
 		if err != nil {
 			p.errCh <- err
+			continue
 		}
 
 		if msgType == websocket.TextMessage {

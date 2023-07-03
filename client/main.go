@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"simple-chat-room/common"
 
 	"github.com/gorilla/websocket"
 )
 
 func main() {
-	fmt.Println("[SETUP] Your name??")
+
+	fmt.Println(common.SETUPMsg("Your name??"))
 	var playerName string
 	_, err := fmt.Scan(&playerName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("[SETUP] Room's name??")
+	fmt.Println(common.SETUPMsg("Room's name??"))
 	var roomName string
 	_, err = fmt.Scan(&roomName)
 	if err != nil {
@@ -37,6 +39,7 @@ func main() {
 	if res.StatusCode != http.StatusSwitchingProtocols {
 		log.Fatal("connection was not switched to websocket")
 	}
+
 	defer conn.Close()
 
 	p := NewPrinter(conn)

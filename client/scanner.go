@@ -1,9 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
+	"bytes"
+	"log"
+	"os"
 
 	"github.com/gorilla/websocket"
+)
+
+var (
+	newLine = []byte{'\n'}
+	space   = []byte{' '}
 )
 
 type Scanner struct {
@@ -23,16 +31,26 @@ func (s Scanner) ErrChan() <-chan error {
 }
 
 func (s Scanner) ScanInputs() {
-	for {
-		var input string
-		_, err := fmt.Scan(&input)
-		if err != nil {
-			s.errCh <- err
-		}
+	stdin := bufio.NewScanner(os.Stdin)
 
-		err = s.connection.WriteMessage(websocket.TextMessage, []byte(input))
-		if err != nil {
-			s.errCh <- err
+	for {
+		if stdin.Scan() {
+			msg := bytes.TrimSpace(bytes.ReplaceAll(
+				stdin.Bytes(),
+				newLine,
+				space,
+			))
+			err := s.connection.WriteMessage(websocket.TextMessage, msg)
+			if err != nil {
+				s.errCh <- err
+			}
+		} else {
+			err := stdin.Err()
+			if err != nil {
+				s.errCh <- err
+			} else {
+				log.Println("reached EOF")
+			}
 		}
 	}
 }
